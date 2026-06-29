@@ -1,4 +1,6 @@
+import streamlit as st
 import sqlite3
+import pandas as pd
 
 # Conexión a la base de datos
 def conectar():
@@ -15,26 +17,27 @@ def conectar():
     conn.commit()
     return conn
 
-def agregar_producto(nombre, cantidad, precio):
-    conn = conectar()
-    conn.execute("INSERT INTO productos (nombre, cantidad, precio) VALUES (?, ?, ?)", 
-                 (nombre, cantidad, precio))
-    conn.commit()
-    conn.close()
-    print(f"Producto '{nombre}' añadido con éxito.")
+st.title("📦 Sistema de Inventario Empresarial")
 
-def listar_productos():
+menu = st.sidebar.selectbox("Menú", ["Ver Inventario", "Agregar Producto"])
+
+if menu == "Ver Inventario":
+    st.subheader("Productos en Stock")
     conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM productos")
-    productos = cursor.fetchall()
-    print("\n--- INVENTARIO ACTUAL ---")
-    for p in productos:
-        print(f"ID: {p[0]} | Producto: {p[1]} | Cantidad: {p[2]} | Precio: ${p[3]:.2f}")
+    df = pd.read_sql_query("SELECT * FROM productos", conn)
+    st.table(df)
     conn.close()
 
-# Ejemplo de uso
-if __name__ == "__main__":
-    #agregar_producto("Laptop", 10, 850.00)
-    listar_productos()
-
+elif menu == "Agregar Producto":
+    st.subheader("Registrar nuevo producto")
+    nombre = st.text_input("Nombre del producto")
+    cantidad = st.number_input("Cantidad", min_value=0, step=1)
+    precio = st.number_input("Precio", min_value=0.0, step=0.01)
+    
+    if st.button("Guardar"):
+        conn = conectar()
+        conn.execute("INSERT INTO productos (nombre, cantidad, precio) VALUES (?, ?, ?)", 
+                     (nombre, cantidad, precio))
+        conn.commit()
+        conn.close()
+        st.success(f"Producto '{nombre}' guardado exitosamente!")
