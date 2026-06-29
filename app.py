@@ -67,7 +67,7 @@ def registrar_usuario(username, password, empresa):
 inicializar_db()
 
 # Estado de la sesión en Streamlit
-if "logeado" Packs not in st.session_state:
+if "logeado" not in st.session_state:
     st.session_state["logeado"] = False
     st.session_state["usuario_id"] = None
     st.session_state["nombre_empresa"] = ""
